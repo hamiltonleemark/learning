@@ -1,0 +1,5 @@
+crc32c==2.5
+kafka-python==2.0.2
+msgpack==1.0.5
+pytest==7.0.1
+tox==3.28.0
