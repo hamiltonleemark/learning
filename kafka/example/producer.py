@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import sys
+import time
 import msgpack
 import json
 from kafka import KafkaProducer
@@ -34,8 +36,10 @@ producer = KafkaProducer(value_serializer=lambda m: json.dumps(m).encode('utf-8'
 producer.send('json-topic', {'key': 'value'})
 
 # produce asynchronously
-for _ in range(100):
-    producer.send('my-topic', 'msg')
+for item in range(100):
+    producer.send('my-topic', 'msg %d' % item)
+time.sleep(10)
+sys.exit(0)
 
 def on_send_success(record_metadata):
     print(record_metadata.topic)
