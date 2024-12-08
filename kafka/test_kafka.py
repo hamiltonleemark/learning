@@ -14,19 +14,20 @@ def _recv_wait(consumer, topic, key, value, max_count, sleep_time=1):
     done = False
     count = 0
     for item in range(10):
-        print("MARK 1; item", item)
         for msg in consumer:
             assert msg.topic == topic
             assert msg.partition == 0
             assert msg.key == key
-            assert msg.value == value
+            print(f"MARK 2: recv {msg.offset} {msg.value} checking against {value}")
+            assert msg.value.startswith(value)
             count += 1
-            print("MARK 2; msg", item, count, sleep_time)
+            if count >= max_count:
+                print("MARK: done")
+                return True
         time.sleep(sleep_time)
-        print("MARK 3; msg", item, count, max_count, sleep_time)
+        print("MARK: sleeping")
         if count >= max_count:
             return True
-        print("MARK 4; msg", item, count, max_count, sleep_time)
     assert count > 0
 
 
@@ -50,7 +51,7 @@ def test_auto_offset_reset():
 
     topic = "topic-auto"
     key = b"key-auto"
-    value = b"value-auto"
+    prefix_value = b"value-auto"
 
     consumer = KafkaConsumer(topic, group_id='my-group',
                              auto_offset_reset="earliest",
@@ -58,6 +59,7 @@ def test_auto_offset_reset():
                              bootstrap_servers=['localhost:9092'])
     producer = KafkaProducer(bootstrap_servers=['localhost:9092'])
     for item in range(10):
-        value="%s: %d" % (value, item)
+        value = b"%s: %d" % (prefix_value, item)
+        print(f"MARK: send {key}:{value}")
         producer.send(topic, key=key, value=value)
-    _recv_wait(consumer, topic, key, value, 10)
+    _recv_wait(consumer, topic, key, prefix_value, 10)
