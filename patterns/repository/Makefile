@@ -3,8 +3,8 @@ check: pylint test
 
 .PHONY: pylint
 pylint:
-	pylint --recursive=y ./kafka
+	pylint --recursive=y ./*.py
 
 .PHONY: test
 test:
-	pytest test_repository.py
+	pytest *.py

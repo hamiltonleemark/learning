@@ -3,8 +3,8 @@ check: pylint test
 
 .PHONY: pylint
 pylint:
-	pylint --recursive=y ./kafka
+	make -C repository $@
 
 .PHONY: test
 test:
-	pytest test_repository.py
+	make -C repository $@
