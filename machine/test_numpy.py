@@ -27,3 +27,16 @@ def test_sparse():
     assert sparse_matrix[2, 1] == 5
 
 
+def test_apply_function():
+    """ Testing apply. """
+
+    sparse_matrix = csr_matrix([[0, 0, 3], [4, 0, 0], [0, 5, 0]])
+
+    add_1 = lambda item: item + 1
+
+    vector_add_1 = np.vectorize(add_1)
+    vector_add_1(sparse_matrix)
+
+    assert sparse_matrix[2, 1] == 6
+
+    vector_add_1
