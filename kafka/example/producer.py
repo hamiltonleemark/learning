@@ -1,8 +1,11 @@
 #!/usr/bin/env python
-import sys
+""" Producer test. """
+
+# pylint: disable=consider-using-f-string
 import time
-import msgpack
+import logging
 import json
+import msgpack
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
@@ -14,10 +17,8 @@ future = producer.send('my-topic', b'raw_bytes')
 # Block for 'synchronous' sends
 try:
     record_metadata = future.get(timeout=10)
-except KafkaError:
-    # Decide what to do if produce request failed...
-    log.exception()
-    pass
+except KafkaError as earg:
+    logging.exception(earg)
 
 # Successful result returns assigned partition and offset
 print("topic:", record_metadata.topic)
@@ -38,17 +39,22 @@ producer.send('json-topic', {'key': 'value'})
 # produce asynchronously
 for item in range(100):
     producer.send('my-topic', 'msg %d' % item)
-time.sleep(10)
-sys.exit(0)
 
-def on_send_success(record_metadata):
-    print(record_metadata.topic)
-    print(record_metadata.partition)
-    print(record_metadata.offset)
+time.sleep(10)
+
+def on_send_success(rmetadata):
+    """ Send on success. """
+
+    print(rmetadata.topic)
+    print(rmetadata.partition)
+    print(rmetadata.offset)
+
 
 def on_send_error(excp):
-    log.error('I am an errback', exc_info=excp)
-    # handle exception
+    """ On send error. """
+
+    logging.error('I am an errback', exc_info=excp)
+
 
 # produce asynchronously with callbacks
 producer.send('my-topic', 'raw_bytes').add_callback(on_send_success).add_errback(on_send_error)

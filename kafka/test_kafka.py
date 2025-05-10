@@ -2,13 +2,12 @@
 
 """ Learning how to use Kafka. """
 
-import logging
-import msgpack
-import json
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=too-many-arguments
+
 import time
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
-from kafka.errors import KafkaError
 
 def _consumer_wait(consumer, sleep_time=1, max_wait=10):
     """ Consumer only registers with the daemon when poll is called.
@@ -45,10 +44,11 @@ def _recv_wait(consumer, topic, key, value, max_count, sleep_time=1):
             if count >= max_count:
                 return True
         time.sleep(sleep_time)
-        print(f"MARK: slept {sleep_time}")
         if count >= max_count:
             return True
     assert count > 0
+
+    return False
 
 
 def test_default_producer_consumer():

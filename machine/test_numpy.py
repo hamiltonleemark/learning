@@ -102,3 +102,19 @@ def test_rank():
 
     rank = numpy.linalg.matrix_rank(matrix)
     assert int(rank) == 3
+
+
+def test_dot_matrix():
+    """ Testing dot matrices. """
+
+    matrix1 = numpy.array([[1, 1],
+                          [1, 2]])
+
+    matrix2 = numpy.array([[1, 3],
+                           [1, 2]])
+
+
+    result = numpy.dot(matrix1, matrix2)
+
+    assert result[0, 0] == 2
+    assert result[1, 1] == 7
