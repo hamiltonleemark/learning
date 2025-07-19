@@ -7,4 +7,4 @@ pylint:
 
 .PHONY: test
 test:
-	pytest ./machine/test_.py
+	pytest ./machine/
