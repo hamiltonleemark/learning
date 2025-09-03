@@ -1,0 +1,6 @@
+Setup for these tests
+docker run -d -p 5672:5672 rabbitmq
+docker run --name redis -d -p 6379:6379 redis
+celery -A tasks worker --loglevel=INFO
+
+pytest -s -v --log-cli-level info  ./test_celery.py 
