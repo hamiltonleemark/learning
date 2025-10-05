@@ -1,18 +1,29 @@
 import pytest
-import tasks
 import time
 import logging
 import celery
+import celery.result
 import proj.tasks
 
-def test_add():
-    """ Test adding a result. """
 
-    result = tasks.add.delay(4, 6)
-    while not result.ready():
-        logging.debug("waiting for result")
-        time.sleep(1)
-    assert result.get() == 10
+def test_chain():
+    """ Learn how to chain celery. """
+
+    ##
+    # First call add tasks 10 times.
+    ##
+    assert proj.tasks.add.delay(4, 4).get() == 8
+    assert proj.tasks.mul.delay(8, 8).get() == 64
+    # mul.s is a curry function.
+    result = celery.chain(proj.tasks.add.s(4, 4) | proj.tasks.mul.s(8))
+    result.delay().get() == 64
+
+
+def test_sleep():
+    """ chain celery. """
+
+    assert proj.tasks.sleep.delay(100)
+
 
 def get_celery_queue_items(app, queue_name):
     import base64
@@ -55,45 +66,18 @@ def test_mimic_a_breakdown():
 
     logging.info("starting test")
 
-    ##
-    # First call add tasks 10 times.
-    ##
-    results = []
-    for i in range(10):
-        results += [tasks.add.delay(4, 6)]
-
-    # Yes only one.
-    logging.info("waiting for result to be ready")
-    for result in results:
-        logging.info(f"result {result}")
-
     app = celery.Celery('tasks', backend="redis://localhost",
                          broker='pyamqp://guest@localhost//')
 
     inspection = app.control.inspect()
-    print("stats", inspection.stats())
     print("registered", inspection.registered())
     print("active", inspection.active())
     print("scheduled", inspection.scheduled())
     print("reserved", inspection.reserved())
 
-    jobs = get_queued_jobs(app, "celery")
-    logging.info("number of jobs %s", len(jobs))
-    for job in get_queued_jobs(app, "celery"):
-        logging.info(f"job {job}")
-        job.forget()
-    return
-
-    inspection = app.control.inspect()
-    print("stats", inspection.stats())
-
-
-def test_chain():
-    """ Learn how to chain celery. """
-
-    ##
-    # First call add tasks 10 times.
-    ##
-    result = celery.chain(proj.tasks.add.s(4, 4) | proj.tasks.mul.s(8,8))
-    print(resul.get())
-
+    active = inspection.active()
+    for worker, jobs in active.items():
+        for job in jobs:
+            print("id", job["id"])
+            job = celery.result.AsyncResult(job["id"])
+            job.forget()

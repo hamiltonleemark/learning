@@ -1,3 +1,4 @@
+import time
 from .celery import app
 
 
@@ -14,3 +15,8 @@ def mul(x, y):
 @app.task
 def xsum(numbers):
     return sum(numbers)
+
+@app.task
+def sleep(seconds):
+    time.sleep(seconds)
+    return seconds
