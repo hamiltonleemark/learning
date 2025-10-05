@@ -1,14 +1,27 @@
-Setup for these containers before running tests
-docker run -d -p 5672:5672 rabbitmq --name rabbitmq
-docker run -d -p 6379:6379 redis --name redis
+##
+# Useful documents
+https://www.vintasoftware.com/blog/celery-wild-tips-and-tricks-run-async-tasks-real-world
+
+##
+
+##
+#Setup for these containers before running tests
+docker run --name rabbitmq -d -p 5672:5672 rabbitmq
+docker run --name redis -d -p 6379:6379 redis
+##
 
 ##
 # this starts the worker as daemon in something closer to a production.
 cd ~/github/learning/celery/src
 #celery -A tasks worker --loglevel=INFO
-or  
+#or  
 sudo mkdir /var/run/celery
 sudo chmod 777 /var/run/celery
-celery multi start w1 -A proj -l INFO
+rm /var/run/celery/*.log
+
+celery multi start w1 -A proj -l INFO --logfile=/var/run/celery/%n%I.log --pidfile=/var/run/celery/%n%I.pid
+
+# Run flower to watch tasks
+celery --broker=pyamqp://guest@localhost// flower
 
 pytest -s -v --log-cli-level info  ./test_celery.py 
