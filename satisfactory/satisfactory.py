@@ -11,13 +11,14 @@ class Output():
 
 
 class Recipe():
-    def __init__(self, item, inputs=None, outputs=None):
+    def __init__(self, item, rinput, output_per_min):
+
+        if not rinput:
+            raise Value(f"{item} input none")
+
+        if not output_per_min:
+            raise Value(f"{item} output_per_min")
 
         self.item = item
-        self.inputs = inputs
-        self.outputs = outputs
-
-        if not self.input:
-            raise Value(f"{item} input none")
-        if not self.output:
-            raise Value(f"{item} output none")
+        self.input = input
+        self.output = Output(item, output_per_min)

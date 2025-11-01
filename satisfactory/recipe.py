@@ -1,10 +1,13 @@
 import satisfactory
 import material
 
-class IronIngot:
+class IronIngot(satisfactory.Recipe):
     def __init__(self):
-        self.name = material.IRON_INGOT
-        self.input = satisfactory.Input(material.IRON_ORE, 30)
-        self.output = satisfactory.Output(material.IRON_INGOT, 30)
-        
-        
+        super().__init__(satisfactory.Input(material.IRON_ORE, 30),
+                         material.IRON_INGOT, 30)
+
+
+class IronPlate(satisfactory.Recipe):
+    def __init__(self):
+        super().__init__(satisfactory.Input(material.IRON_INGOT, 30),
+                         material.IRON_PLATE, 20)
