@@ -1,2 +1,3 @@
 check:
-	pytest test_recipe.py
+	pylint .
+	pytest -v .
