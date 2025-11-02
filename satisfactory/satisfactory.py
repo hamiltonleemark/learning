@@ -55,9 +55,4 @@ def maximize(miners, cookbook, material):
     rgraph = _graph_build(cookbook, material)
     logging.info("%s: cookbook %s", PREFIX, cookbook)
 
-    print("sources:")
-    sources = rgraph.sources_get()
-    for source in sources:
-        print(source)
-    print("sources:")
     return rgraph

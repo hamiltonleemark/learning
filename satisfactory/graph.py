@@ -49,14 +49,6 @@ class Graph():
             self.vertices[key] = Vertex(recipe)
         return self.vertices[key]
 
-    def sources_get(self):
-        """ List of vertices that are miners. """
-
-        for _, value in self.vertices.items():
-            if value.recipe.is_source():
-                return [value]
-        return []
-
     def edge_add(self, u_value, v_value):
         """ Add an edge. """
 
