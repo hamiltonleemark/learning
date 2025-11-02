@@ -11,4 +11,5 @@ def test_iron_ore_satisfactory():
     miners = [miner.MK2(material.IRON_ORE, miner.NORMAL)]
     plan = satisfactory.maximize(miners, recipe.CookBook([recipe.IronIngot()]),
                                  material.IRON_INGOT)
+    plan.show()
     assert plan

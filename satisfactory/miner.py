@@ -24,9 +24,12 @@ class Ifc(ifc.Producer):
     def __repr__(self):
         return str(self)
 
-    def produces(self, item):
+    def is_producer(self, item):
         """ Return True if this miner produces this item. """
         return self.material == item
+
+    def is_source(self):
+        return True
 
     @property
     def inputs(self):

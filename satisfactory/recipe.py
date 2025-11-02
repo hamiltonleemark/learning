@@ -44,7 +44,11 @@ class Recipe(ifc.Producer):
         """ The material produced by this recipe. """
         return self.output.material
 
-    def produces(self, item):
+    def is_source(self):
+        return False
+
+    def is_producer(self, item):
+        print("MARK: is_producer", self.output.material, item)
         return self.output.material == item
 
     def __str__(self):
@@ -73,10 +77,9 @@ class CookBook():
         """ Return the recipe for the given material. """
 
         for recipe in self.recipes:
-            if recipe.produces(item):
+            if recipe.is_producer(item):
                 return recipe
         raise ValueError(f"{PREFIX} could not find recipe for {item}")
-
 
     def __iadd__(self, other):
         """ Combine two cookbooks. """
@@ -86,7 +89,7 @@ class CookBook():
     def __str__(self):
         """ Return all of the recipes. """
 
-        return ",".join(self.recipes)
+        return ", ".join([str(item.material) for item in self.recipes])
 
 
 class IronIngot(Recipe):

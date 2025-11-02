@@ -2,33 +2,46 @@
 
 import logging
 import graph
+import ifc
 
 PREFIX = "satisfactory"
 
 
-def _graph_vertex_add(rgraph, cookbook, output_material, input_material):
+def _graph_vertex_add(rgraph, cookbook, current_recipe, input_recipe):
     """ Recursively add vertices to graph. """
 
-    logging.info("%s: graph_vertex_add input %s", PREFIX, input_material)
-    current = cookbook.find(input_material)
-    rgraph.edge_add(output_material, current.material)
-    for item in current.inputs:
-        rgraph = _graph_vertex_add(rgraph, cookbook, current.material,
-                                   item.material)
+    logging.info("%s: vertex add %s %s", PREFIX, current_recipe, input_recipe)
+
+    if not isinstance(current_recipe, ifc.Producer):
+        raise ValueError("current recipe is not a recipe")
+
+    if not isinstance(input_recipe, ifc.Producer):
+        raise ValueError("input recipe is not a recipe")
+
+    logging.info("%s: graph_vertex_add input %s", PREFIX, input_recipe)
+    rgraph.edge_add(current_recipe, input_recipe)
+
+    for item in input_recipe.inputs:
+        next_recipe = cookbook.find(item.material)
+        rgraph = _graph_vertex_add(rgraph, cookbook, input_recipe, next_recipe)
     return rgraph
+
 
 def _graph_build(cookbook, material):
     """ Return relevent recipes. """
 
+    logging.info("%s: graph build", PREFIX)
+
     rgraph = graph.Graph()
 
-    current = cookbook.find(material)
-    rgraph.vertex_add(current)
+    current_recipe = cookbook.find(material)
+    rgraph.vertex_add(current_recipe)
 
-    for item in current.inputs:
-        rgraph = _graph_vertex_add(rgraph, cookbook, current.material,
-                                   item.material)
-
+    for item in current_recipe.inputs:
+        print(f"{PREFIX}: graph build {current_recipe} {item}")
+        next_recipe = cookbook.find(item.material)
+        rgraph = _graph_vertex_add(rgraph, cookbook, current_recipe,
+                                   next_recipe)
     return rgraph
 
 
@@ -41,4 +54,10 @@ def maximize(miners, cookbook, material):
         cookbook.miner_add(miner)
     rgraph = _graph_build(cookbook, material)
     logging.info("%s: cookbook %s", PREFIX, cookbook)
+
+    print("sources:")
+    sources = rgraph.sources_get()
+    for source in sources:
+        print(source)
+    print("sources:")
     return rgraph

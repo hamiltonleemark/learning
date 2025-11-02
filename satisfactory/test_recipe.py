@@ -31,7 +31,7 @@ def test_iron_ingot():
     """ Assert producer. """
 
     item = recipe.IronIngot()
-    assert item.produces(material.IRON_INGOT)
+    assert item.is_producer(material.IRON_INGOT)
 
     cookbook = recipe.CookBook([recipe.IronIngot()])
     item = cookbook.find(material.IRON_INGOT)
