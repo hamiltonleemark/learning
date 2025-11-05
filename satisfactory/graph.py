@@ -43,10 +43,10 @@ class Graph():
         if not isinstance(value, ifc.Producer):
             raise ValueError("value is not recipe")
 
-        key = str(recipe)
+        key = str(value)
 
         if key not in self.vertices:
-            self.vertices[key] = Vertex(recipe)
+            self.vertices[key] = Vertex(value)
         return self.vertices[key]
 
     def edge_add(self, u_value, v_value):
@@ -71,4 +71,4 @@ class Graph():
         print("graph vertices")
         for (key, value) in self.vertices.items():
             neighbors = [str(item.recipe) for item in value.neighbors]
-            print(f"{key}: {neighbors}")
+            print(f"show neighbors {key}: {neighbors}")

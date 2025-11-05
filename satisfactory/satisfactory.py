@@ -3,6 +3,11 @@
 import logging
 import graph
 import ifc
+import numpy
+import sympy
+import pandas
+import recipe
+import miner
 
 PREFIX = "satisfactory"
 
@@ -18,7 +23,6 @@ def _graph_vertex_add(rgraph, cookbook, current_recipe, input_recipe):
     if not isinstance(input_recipe, ifc.Producer):
         raise ValueError("input recipe is not a recipe")
 
-    logging.info("%s: graph_vertex_add input %s", PREFIX, input_recipe)
     rgraph.edge_add(current_recipe, input_recipe)
 
     for item in input_recipe.inputs:
@@ -38,7 +42,6 @@ def _graph_build(cookbook, material):
     rgraph.vertex_add(current_recipe)
 
     for item in current_recipe.inputs:
-        print(f"{PREFIX}: graph build {current_recipe} {item}")
         next_recipe = cookbook.find(item.material)
         rgraph = _graph_vertex_add(rgraph, cookbook, current_recipe,
                                    next_recipe)
@@ -50,12 +53,37 @@ def maximize(miners, cookbook, material):
 
     logging.info("%s: maximize %s", PREFIX, material)
 
-    for miner in miners:
-        cookbook.miner_add(miner)
-    rgraph = _graph_build(cookbook, material)
-    logging.info("%s: cookbook %s", PREFIX, cookbook)
+    for item in miners:
+        cookbook.miner_add(item)
 
-    ##
-    # Miners only add one column to the matrix
+    rgraph = _graph_build(cookbook, material)
+    rgraph.show()
+
+    for (key, vertex) in rgraph.vertices.items():
+        if isinstance(vertex.recipe, miner.Ifc):
+            var1 = sympy.symbols(vertex.recipe.material + "_output")
+            equation = sympy.Eq(var1, vertex.recipe.per_min)
+            logging.info("%s: miner equation %s", PREFIX, equation)
+            print("MARK: ", equation)
+        elif isinstance(vertex.recipe, recipe.Recipe):
+            out1 = sympy.symbols(vertex.recipe.material + "_output")
+            num1 = sympy.symbols(vertex.recipe.material)
+            equation = sympy.Eq(vertex.recipe.output.per_min*num1, out1)
+            print("MARK: output", equation)
+
+            assert len(vertex.recipe.inputs) == 1, "single input only"
+
+            in1 = sympy.symbols(vertex.recipe.inputs[0].material + "_output")
+            equation = sympy.Eq(vertex.recipe.inputs[0].per_min*num1,
+                                in1)
+            print("MARK: ", equation)
+        else:
+            raise ValueError(f"{PREFIX} unknown recipe type")
+
+    #columns = [miner.material + " output", "value"]
+    #equation = numpy.array([1, miner.per_min])
+    #pd = pandas.DataFrame(equation, index=columns)
+    #print("MARK: ", equation, pd)
+    #equations.append(pd)
 
     return rgraph

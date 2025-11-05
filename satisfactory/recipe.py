@@ -42,13 +42,13 @@ class Recipe(ifc.Producer):
     @property
     def material(self):
         """ The material produced by this recipe. """
+
         return self.output.material
 
     def is_source(self):
         return False
 
     def is_producer(self, item):
-        print("MARK: is_producer", self.output.material, item)
         return self.output.material == item
 
     def __str__(self):
@@ -67,11 +67,18 @@ class CookBook():
 
     def miner_add(self, miner):
         """ Add a miner recipe to the cookbook. """
+
         self.recipes.append(miner)
 
     def recipe_add(self, recipe):
         """ Add a recipe to the cookbook. """
+
         self.recipes.append(recipe)
+
+    def sources_get(self):
+        """ List of sources. """
+
+        return [item for item in self.recipes if item.is_source()]
 
     def find(self, item):
         """ Return the recipe for the given material. """
