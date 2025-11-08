@@ -46,6 +46,13 @@ class Recipe(ifc.Producer):
 
         return self.output.material
 
+    def input_get(self, imat):
+        """ Return the input of the given material. """
+        for item in self.inputs:
+            if item.material == imat:
+                return item
+        raise ValueError("{PREFIX} recipe %s does not take {imat}")
+
     def is_source(self):
         return False
 

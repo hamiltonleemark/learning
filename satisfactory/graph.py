@@ -66,7 +66,7 @@ class Graph():
 
         u_vertex = self.vertex_add(u_value)
         v_vertex = self.vertex_add(v_value)
-        u_vertex.neighbors.append(v_vertex)
+        #u_vertex.neighbors.append(v_vertex)
         v_vertex.neighbors.append(u_vertex)
 
     def show(self):
