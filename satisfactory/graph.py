@@ -22,6 +22,11 @@ class Vertex():
     def __repr__(self):
         return self.__str__()
 
+    def equations(self):
+        """ Return variables and equations. """
+        outputs = [item.recipe for item in self.neighbors]
+        return self.recipe.equations(outputs)
+
 
 class Edge():
     """ Edge in graph. """

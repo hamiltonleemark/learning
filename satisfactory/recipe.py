@@ -1,7 +1,7 @@
 """ Holds all recipes. """
-import sympy
 import ifc
 import material
+import equations
 
 PREFIX = "recipe"
 
@@ -61,7 +61,7 @@ class Recipe(ifc.Producer):
     def equations(self, outputs):
         """ Return recipe equations. """
 
-        return equations.get(self, output)
+        return equations.get(self, outputs)
 
 class CookBook():
     """ A collection of recipes. """

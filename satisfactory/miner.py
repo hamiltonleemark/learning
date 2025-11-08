@@ -41,8 +41,9 @@ class Ifc(ifc.Producer):
         """ Miners do not have inputs. """
         return []
 
-    def equation(self):
-        """ REturn the equation for a miner. """
+    def equations(self, _):
+        """ Return the equation for a miner. """
+
         var1 = sympy.symbols(self.material + "_output")
         equation = sympy.Eq(var1, self.per_min)
 

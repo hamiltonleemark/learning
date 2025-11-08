@@ -62,7 +62,7 @@ def maximize(miners, cookbook, material):
     variables = set()
 
     for (_, vertex) in rgraph.vertices.items():
-        (mvars, meqs) = vertex.recipe.equation()
+        (mvars, meqs) = vertex.equations()
         equations += meqs
         variables |= mvars
 
