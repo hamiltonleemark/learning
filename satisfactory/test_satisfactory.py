@@ -1,4 +1,7 @@
 """ Test satisfactory. """
+
+# pylint: disable=consider-using-f-string
+
 import satisfactory
 import miner
 import recipe

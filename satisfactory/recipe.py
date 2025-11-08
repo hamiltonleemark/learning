@@ -60,6 +60,8 @@ class Recipe(ifc.Producer):
 
 
 class RecipeOneInput(Recipe):
+    """ A recipe with one input. """
+
     def equation(self):
         """ Return recipe equation. """
 
@@ -84,6 +86,8 @@ class RecipeOneInput(Recipe):
 
 
 class RecipeTwoInput(Recipe):
+    """ A recipe with two inputs. """
+
     def equation(self):
         """ Return recipe equation. """
 
@@ -105,6 +109,7 @@ class RecipeTwoInput(Recipe):
 
         eq = self.inputs[0].per_min*ivar1 + self.inputs[1].per_min*ivar2
         equation = sympy.Eq(eq, mvar)
+        equations.append(equation)
 
         return (variables, equations)
 

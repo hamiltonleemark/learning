@@ -7,8 +7,6 @@ import logging
 import sympy
 import graph
 import ifc
-import recipe
-import miner
 
 PREFIX = "satisfactory"
 
