@@ -58,61 +58,10 @@ class Recipe(ifc.Producer):
     def __repr__(self):
         return str(self)
 
+    def equations(self, outputs):
+        """ Return recipe equations. """
 
-class RecipeOneInput(Recipe):
-    """ A recipe with one input. """
-
-    def equation(self):
-        """ Return recipe equation. """
-
-        variables = set()
-        equations = []
-
-        mvar = sympy.symbols(self.material)
-        ovar = sympy.symbols(self.material + "_output")
-        variables.add(mvar)
-        variables.add(ovar)
-
-        outeq = sympy.Eq(self.output.per_min*mvar, ovar)
-        equations.append(outeq)
-
-        ivar = sympy.symbols(self.inputs[0].material + "_output")
-        variables.add(ivar)
-
-        ineq = sympy.Eq(self.inputs[0].per_min*mvar, ivar)
-        equations.append(ineq)
-
-        return (variables, equations)
-
-
-class RecipeTwoInput(Recipe):
-    """ A recipe with two inputs. """
-
-    def equation(self):
-        """ Return recipe equation. """
-
-        variables = set()
-        equations = []
-
-        mvar = sympy.symbols(self.material)
-        ovar = sympy.symbols(self.material + "_output")
-        variables.add(mvar)
-        variables.add(ovar)
-
-        outeq = sympy.Eq(self.output.per_min*mvar, ovar)
-        equations.append(outeq)
-
-        ivar1 = sympy.symbols(self.inputs[0].material + "_output")
-        ivar2 = sympy.symbols(self.inputs[1].material + "_output")
-        variables.add(ivar1)
-        variables.add(ivar2)
-
-        eq = self.inputs[0].per_min*ivar1 + self.inputs[1].per_min*ivar2
-        equation = sympy.Eq(eq, mvar)
-        equations.append(equation)
-
-        return (variables, equations)
-
+        return equations.get(self, output)
 
 class CookBook():
     """ A collection of recipes. """
@@ -155,34 +104,34 @@ class CookBook():
         return ", ".join([str(item.material) for item in self.recipes])
 
 
-class IronIngot(RecipeOneInput):
+class IronIngot(Recipe):
     """ Recipe for Iron Ingot. """
     def __init__(self):
         super().__init__([Input(material.IRON_ORE, 30)],
                          material.IRON_INGOT, 30)
 
 
-class IronPlate(RecipeOneInput):
+class IronPlate(Recipe):
     """ Recipe for Iron Plate. """
     def __init__(self):
         super().__init__([Input(material.IRON_INGOT, 30)],
                         material.IRON_PLATE, 20)
 
 
-class IronRod(RecipeOneInput):
+class IronRod(Recipe):
     """ Recipe for Iron Rod. """
     def __init__(self):
         super().__init__([Input(material.IRON_INGOT, 15)],
                          material.IRON_ROD, 15)
 
 
-class Screws(RecipeOneInput):
+class Screws(Recipe):
     """ Recipe for Screws. """
     def __init__(self):
         super().__init__([Input(material.IRON_ROD, 10)], material.SCREWS, 40)
 
 
-class ReinforcedIronPlate(RecipeTwoInput):
+class ReinforcedIronPlate(Recipe):
     """ Recipe for Reinforced Iron Plate. """
     def __init__(self):
         super().__init__([Input(material.IRON_PLATE, 10),

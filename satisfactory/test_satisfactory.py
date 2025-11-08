@@ -19,7 +19,18 @@ def test_iron_ore_satisfactory():
         print("%-20s %9.2f" % (item, amount))
 
 
-def test_reinforced_iron_plates():
+def test_iron_rod_satisfactory():
+    """ Test iron ore decisions from a cookbook. """
+
+    miners = [miner.MK2(material.IRON_ORE, miner.NORMAL)]
+    ans = satisfactory.maximize(miners, recipe.STANDARD, material.IRON_ROD)
+
+    assert ans
+    for (item, amount) in ans.items():
+        print("%-20s %9.2f" % (item, amount))
+
+
+def test_reinforced_reinforced_iron_plate():
     """ Test iron ore decisions from a cookbook. """
 
     miners = [miner.MK2(material.IRON_ORE, miner.NORMAL)]
