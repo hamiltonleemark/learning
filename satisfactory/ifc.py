@@ -12,3 +12,7 @@ class Producer(abc.ABC):
     @abc.abstractmethod
     def is_producer(self, item):
         """ Return True if this producer produces this item. """
+
+    @abc.abstractmethod
+    def equation(self):
+        """ Return the equations for this producer. """

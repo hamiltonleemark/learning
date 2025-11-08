@@ -2,7 +2,6 @@
 
 import logging
 import ifc
-import recipe
 
 PREFIX = "graph"
 

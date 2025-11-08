@@ -1,11 +1,12 @@
 """ handle calculating build solutions base on requirements and recipes. """
 
+# pylint: disable=too-many-locals
+# pylint: disable=consider-using-f-string
+
 import logging
+import sympy
 import graph
 import ifc
-import numpy
-import sympy
-import pandas
 import recipe
 import miner
 
@@ -59,31 +60,17 @@ def maximize(miners, cookbook, material):
     rgraph = _graph_build(cookbook, material)
     rgraph.show()
 
-    for (key, vertex) in rgraph.vertices.items():
-        if isinstance(vertex.recipe, miner.Ifc):
-            var1 = sympy.symbols(vertex.recipe.material + "_output")
-            equation = sympy.Eq(var1, vertex.recipe.per_min)
-            logging.info("%s: miner equation %s", PREFIX, equation)
-            print("MARK: ", equation)
-        elif isinstance(vertex.recipe, recipe.Recipe):
-            out1 = sympy.symbols(vertex.recipe.material + "_output")
-            num1 = sympy.symbols(vertex.recipe.material)
-            equation = sympy.Eq(vertex.recipe.output.per_min*num1, out1)
-            print("MARK: output", equation)
+    equations = []
+    variables = set()
 
-            assert len(vertex.recipe.inputs) == 1, "single input only"
+    for (_, vertex) in rgraph.vertices.items():
+        (mvars, meqs) = vertex.recipe.equation()
+        equations += meqs
+        variables |= mvars
 
-            in1 = sympy.symbols(vertex.recipe.inputs[0].material + "_output")
-            equation = sympy.Eq(vertex.recipe.inputs[0].per_min*num1,
-                                in1)
-            print("MARK: ", equation)
-        else:
-            raise ValueError(f"{PREFIX} unknown recipe type")
+    logging.info("%s: variables %s", PREFIX, variables)
+    for equation in equations:
+        logging.info("%s: equation %s", PREFIX, equation)
 
-    #columns = [miner.material + " output", "value"]
-    #equation = numpy.array([1, miner.per_min])
-    #pd = pandas.DataFrame(equation, index=columns)
-    #print("MARK: ", equation, pd)
-    #equations.append(pd)
-
-    return rgraph
+    ans = sympy.solve(equations, variables)
+    return ans

@@ -1,9 +1,14 @@
 """ Miners in the game. """
 
+import logging
+import sympy
+
 import ifc
 IMPURE = 0.5
 NORMAL = 1.0
 PURE = 2.0
+
+PREFIX = "miner"
 
 
 class Ifc(ifc.Producer):
@@ -35,6 +40,15 @@ class Ifc(ifc.Producer):
     def inputs(self):
         """ Miners do not have inputs. """
         return []
+
+    def equation(self):
+        """ REturn the equation for a miner. """
+        var1 = sympy.symbols(self.material + "_output")
+        equation = sympy.Eq(var1, self.per_min)
+
+        logging.info("%s: miner equation %s", PREFIX, equation)
+
+        return (set([var1]), [equation])
 
 
 class MK1(Ifc):
