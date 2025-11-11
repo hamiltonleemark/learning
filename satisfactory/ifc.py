@@ -14,5 +14,5 @@ class Producer(abc.ABC):
         """ Return True if this producer produces this item. """
 
     @abc.abstractmethod
-    def equations(self, outputs):
+    def equations(self, outputs, filter_variables=[]):
         """ Return the equations for this producer. """

@@ -19,11 +19,16 @@ class Vertex():
         return "%s: %s" % (str(self.recipe),
                            ",".join([str(item.recipe) for item in self.neighbors]))
 
+    def id_get(self):
+        """ Get vertex id. """
+        return str(self.recipe)
+
     def __repr__(self):
         return self.__str__()
 
-    def equations(self):
+    def equations(self, variables):
         """ Return variables and equations. """
+
         outputs = [item.recipe for item in self.neighbors]
         return self.recipe.equations(outputs)
 
@@ -40,6 +45,20 @@ class Graph():
     """ Sparse graph. """
     def __init__(self):
         self.vertices = {}
+
+    def vertex_adjacent(self, vertex):
+        """ Get adjacent vertices. """
+        adjacent = [item for item in self.vertices.values()
+                    if vertex in item.neighbors]
+        return adjacent
+
+    def vertex_find_by_value(self, value):
+        """ Find vertex by value. """
+
+        key = str(value)
+        if key in self.vertices:
+            return self.vertices[key]
+        raise ValueError("vertex not found")
 
     def vertex_add(self, value):
         """ add a vertex. """
@@ -66,8 +85,12 @@ class Graph():
 
         u_vertex = self.vertex_add(u_value)
         v_vertex = self.vertex_add(v_value)
+        if u_vertex in v_vertex.neighbors:
+            logging.info("%s: edge exists %s %s", PREFIX, u_value, v_value)
+            return False
         #u_vertex.neighbors.append(v_vertex)
         v_vertex.neighbors.append(u_vertex)
+        return True
 
     def show(self):
         """ Show graph content. """
