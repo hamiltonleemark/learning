@@ -65,10 +65,10 @@ class Recipe(ifc.Producer):
     def __repr__(self):
         return str(self)
 
-    def equations(self, outputs, filter_variables):
+    def equations(self):
         """ Return recipe equations. """
 
-        return equations.get(self, outputs, filter_variables)
+        return equations.get(self)
 
 
 class CookBook():

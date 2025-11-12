@@ -49,4 +49,5 @@ def test_reinforced_reinforced_plate():
                                 material.REINFORCED_IRON_PLATE)
     assert ans
     for (item, amount) in ans.items():
-        print("%-20s %9.2f" % (item, amount))
+        print("%-20s %s" % (item, amount))
+        #print("%-20s %9.2f" % (item, amount))

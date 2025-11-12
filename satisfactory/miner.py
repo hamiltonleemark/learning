@@ -41,7 +41,7 @@ class Ifc(ifc.Producer):
         """ Miners do not have inputs. """
         return []
 
-    def equations(self, _):
+    def equations(self):
         """ Return the equation for a miner. """
 
         var1 = sympy.symbols(self.material + "_output")
@@ -49,6 +49,7 @@ class Ifc(ifc.Producer):
 
         logging.info("%s: miner equation %s", PREFIX, equation)
 
+        print("MARK; ore", var1, equation)
         return (set([var1]), [equation])
 
 

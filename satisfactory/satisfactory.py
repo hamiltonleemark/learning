@@ -7,6 +7,7 @@ import logging
 import sympy
 import graph
 import ifc
+import equations
 
 PREFIX = "satisfactory"
 
@@ -45,8 +46,11 @@ def _graph_build(cookbook, material):
     return rgraph
 
 
-def _depth_first_search(rgraph, start_vertex, visited={}, distance=0):
+def _depth_first_search(rgraph, start_vertex, visited=None, distance=0):
     """ Depth first search of graph. """
+
+    if visited is None:
+        visited = {}
 
     prefix = "%s.dfs" % PREFIX
     logging.info("%s: visiting: %s distance %d", prefix, start_vertex.recipe,
@@ -67,7 +71,7 @@ def _depth_first_search(rgraph, start_vertex, visited={}, distance=0):
 def _dfs_ascending(visited):
     """ Return in ascending order. """
 
-    visited = [item for item in visited.items()]
+    visited = list(visited.items())
     visited = sorted(visited, key=lambda item: item[1])
     visited.reverse()
     return visited
@@ -84,7 +88,7 @@ def maximize(miners, cookbook, material):
     rgraph = _graph_build(cookbook, material)
     rgraph.show()
 
-    equations = []
+    problems = []
     variables = set()
 
     ##
@@ -92,22 +96,50 @@ def maximize(miners, cookbook, material):
     start_vertex = rgraph.vertex_find_by_value(material)
     visited = _depth_first_search(rgraph, start_vertex)
     visited = _dfs_ascending(visited)
+
+    dependency = []
     for (vertex, distance) in visited:
         logging.info("%s visited %s distance %d", PREFIX, vertex, distance)
+        if len(vertex.neighbors) > 1:
+            dependency.append(vertex)
+    ##
+
+    ##
+    # Figure out which recipe has output dependency
+    print("recipes with multiple dependency")
+    for item in dependency:
+        logging.info(item)
+        equations.VAR_OUT_GEN.set(item.recipe.material, 0)
+    #
     ##
 
     for (vertex, _) in visited:
-        (mvars, meqs) = vertex.equations(variables)
-        equations += meqs
+        (mvars, meqs) = vertex.equations()
+        problems += meqs
         variables |= mvars
 
-    equations = _prune_redundant(equations)
-
     logging.info("%s: variables %d equations %d", PREFIX, len(variables),
-                 len(equations))
-    logging.info("%s: variables %s", PREFIX, variables)
-    for equation in equations:
-        logging.info("%s: equation %s", PREFIX, equation)
+                 len(problems))
+    ##
+    # Now add output dependency.
+    (mvars, meqs) = equations.VAR_OUT_GEN.equations()
+    problems += meqs
+    variables |= mvars
+    #
+    ##
 
-    ans = sympy.solve(equations, variables)
+    logging.info("%s: variables %s", PREFIX, variables)
+    for prob in problems:
+        print("MARK: equation", prob)
+        logging.info("%s: equation %s", PREFIX, prob)
+
+    ##
+    # Add equations to bind same output.
+    ##
+    ans = sympy.solve(problems, list(variables))
+
+    print(ans)
+    for item in ans:
+        print(item)
+
     return ans
