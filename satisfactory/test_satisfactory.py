@@ -49,5 +49,15 @@ def test_reinforced_reinforced_plate():
                                 material.REINFORCED_IRON_PLATE)
     assert ans
     for (item, amount) in ans.items():
-        print("%-20s %s" % (item, amount))
-        #print("%-20s %9.2f" % (item, amount))
+        print("%-20s %9.2f" % (item, amount))
+
+
+def test_modular_frame():
+    """ Test modular frame cookbook. """
+
+    miners = [miner.MK2(material.IRON_ORE, miner.PURE)]
+    ans = satisfactory.maximize(miners, recipe.STANDARD,
+                                material.MODULAR_FRAME)
+    assert ans
+    for (item, amount) in ans.items():
+        print("%-20s %9.2f" % (item, amount))

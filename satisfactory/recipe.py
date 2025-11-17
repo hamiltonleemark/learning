@@ -142,10 +142,18 @@ class Screws(Recipe):
 class ReinforcedIronPlate(Recipe):
     """ Recipe for Reinforced Iron Plate. """
     def __init__(self):
-        super().__init__([Input(material.IRON_PLATE, 10),
+        super().__init__([Input(material.IRON_PLATE, 30),
                           Input(material.SCREWS, 60)],
-                         material.REINFORCED_IRON_PLATE, 40)
+                         material.REINFORCED_IRON_PLATE, 5)
+
+
+class ModularFrame(Recipe):
+    """ Recipe for Reinforced Iron Plate. """
+    def __init__(self):
+        super().__init__([Input(material.REINFORCED_IRON_PLATE, 3),
+                          Input(material.IRON_ROD, 12)],
+                         material.MODULAR_FRAME, 2)
 
 
 STANDARD = CookBook([IronIngot(), IronPlate(), IronRod(), Screws(),
-                     ReinforcedIronPlate()])
+                     ReinforcedIronPlate(), ModularFrame()])
