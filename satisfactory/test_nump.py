@@ -221,3 +221,44 @@ def test_modular_prod_only():
     print(x)
     df = pandas.DataFrame(x, index=rows)
     print(df)
+
+
+def test_reinforced_prod_only():
+    """ Test the nump module functionality. """
+
+
+    # RIP = Reinforced Iron Plate assemblers
+    # P = Iron Plate constructors
+    # ROD = Iron Rod constructors
+    # SCR = Screw constructors
+    # ING = Iron Smelters (Iron Ore → Ingot)
+
+    # 30RIP = 30P
+    # 60RIP= 40SCR
+    # 10SCR +24M = 15ROD
+    # 30ING = 30P + 15ROD
+    # 2M = X
+    # 30ING = ORE
+    # ORE = 240
+
+
+    #    RIP,ROD,  P,SCR,ING,ORE
+    A = numpy.array([
+        [30,  0,-30,  0,  0, 0], # 30RIP = 30P
+        [ 0,  0, 60,-40,  0, 0], # 60RIP = 40SCR
+        [ 0,-15,-30,  0, 30, 0], # 30ING = 30P + 15ROD
+        [ 0,  0,  0,  0, 30,-1], # 30ING = ORE
+        [ 0,  0,  0,  0,  0, 1], # ORE = 240
+    ])
+
+    B = numpy.array([0, 0, 0, 0, 0, 0, 240])
+
+    rows = [
+        "Modular", "Reinforced Plate", "Rod",
+        "Plate", "Screws", "Ingot", "Ore"
+    ]
+
+    x = numpy.linalg.solve(A, B)
+    print(x)
+    df = pandas.DataFrame(x, index=rows)
+    print(df)

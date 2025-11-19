@@ -28,7 +28,7 @@ class Vertex():
 
     def equations(self):
         """ Return variables and equations. """
-        return self.recipe.equations()
+        return self.recipe.equations([item.recipe for item in self.neighbors])
 
 
 class Edge():

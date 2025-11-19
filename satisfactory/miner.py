@@ -2,6 +2,7 @@
 
 import logging
 import sympy
+import equations
 
 import ifc
 IMPURE = 0.5
@@ -41,16 +42,19 @@ class Ifc(ifc.Producer):
         """ Miners do not have inputs. """
         return []
 
-    def equations(self):
+    def equations(self, output):
         """ Return the equation for a miner. """
 
-        var1 = sympy.symbols(self.material + "_output")
-        equation = sympy.Eq(var1, self.per_min)
+        (mvars, meqs) = equations.get(self, output)
+        mvar = sympy.symbols(self.material)
+        meq = sympy.Eq(mvar, self.per_min)
 
-        logging.info("%s: miner equation %s", PREFIX, equation)
+        mvars.add(mvar)
+        meqs.append(meq)
 
-        print("MARK; ore", var1, equation)
-        return (set([var1]), [equation])
+        logging.info("%s: miner equation %s", PREFIX, meqs)
+
+        return (mvars, meqs)
 
 
 class MK1(Ifc):
