@@ -5,3 +5,4 @@ __pycache__/
 *.com
 #*.*#
 .idea
+.env
