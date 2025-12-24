@@ -95,6 +95,7 @@ def _two_output(recipe, outputs):
     variables.add(ovar1)
     variables.add(ovar2)
 
+    # pylint: disable=line-too-long
     eq = outputs[0].input_get(recipe.material).per_min*ovar1 + outputs[1].input_get(recipe.material).per_min*ovar2
     outeq = sympy.Eq(recipe.output.per_min*mvar, eq)
     equations.append(outeq)
@@ -107,13 +108,10 @@ def get(recipe, outputs):
     """ Return recipe equation. """
 
     if len(outputs) == 0:
-        print("MARK: get 0", recipe, outputs)
         return (set(), [])
     elif len(outputs) == 1:
-        print("MARK: get 1", recipe, outputs)
         return _one_output(recipe, outputs[0])
     elif len(outputs) == 2:
-        print("MARK: get 2", recipe, outputs)
         return _two_output(recipe, outputs)
     else:
         raise ValueError("output amount not supported %d" % len(outputs))
