@@ -79,3 +79,79 @@ def test_bedrock_invoke_model():
     body = json.loads(resp.get("body").read().decode("utf-8"))
     logging.debug(body)
     assert "Paris" in body["content"][0]["text"]
+
+
+def test_bedrock_stop_reason_max_tokens():
+    """ Invoke the mode and check to see we reached max_tokens. """
+
+    bedrock_runtime = boto3.client('bedrock-runtime')
+    model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+
+    prompt = "Write a summary of Las Vegas. """
+
+    native_request = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 50,
+        "temperature": 0.5,
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": prompt}],
+            }
+        ],
+    }
+
+    # Convert the native request to JSON.
+    request = json.dumps(native_request)
+
+    try:
+        # Invoke the model with the request.
+        resp = bedrock_runtime.invoke_model(modelId=model_id, body=request)
+        assert resp
+
+    except (ClientError, Exception) as e:
+        print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
+        sys.exit(1)
+
+    body = json.loads(resp.get("body").read().decode("utf-8"))
+    logging.debug(body)
+    assert "Las Vegas" in body["content"][0]["text"]
+    assert body["stop_reason"] == "max_tokens"
+
+
+def test_bedrock_stop_reason_end_turn():
+    """ Invoke model and check for a long response finishes correctly. """
+
+    bedrock_runtime = boto3.client('bedrock-runtime')
+    model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+
+    prompt = "Write a summary of Las Vegas. """
+
+    native_request = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 500,
+        "temperature": 0.5,
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": prompt}],
+            }
+        ],
+    }
+
+    # Convert the native request to JSON.
+    request = json.dumps(native_request)
+
+    try:
+        # Invoke the model with the request.
+        resp = bedrock_runtime.invoke_model(modelId=model_id, body=request)
+        assert resp
+
+    except (ClientError, Exception) as e:
+        print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
+        sys.exit(1)
+
+    body = json.loads(resp.get("body").read().decode("utf-8"))
+    logging.debug(body)
+    assert "Las Vegas" in body["content"][0]["text"]
+    assert body["stop_reason"] == "end_turn"
