@@ -79,6 +79,7 @@ def test_bedrock_invoke_model():
     body = json.loads(resp.get("body").read().decode("utf-8"))
     logging.debug(body)
     assert "Paris" in body["content"][0]["text"]
+    assert body["stop_reason"] == "end_turn"
 
 
 def test_bedrock_stop_reason_max_tokens():
