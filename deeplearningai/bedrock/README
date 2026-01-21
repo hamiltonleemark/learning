@@ -1,0 +1,7 @@
+## Initial Setup
+
+\todo need to define requireents.txt
+
+python 3.12.7 is required for these tests.
+pyenv install 3.12.7
+pyenv shell 3.12.7
