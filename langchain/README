@@ -1,0 +1,9 @@
+## Setup
+pyenv shell 3.12.8
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+## Start Jupyter Lab to see course mateiral
+cd lca-langchainV1-essentials/python
+create a .env
+uv run jupyter lab
