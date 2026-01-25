@@ -3,6 +3,12 @@
 
 This course will cover an introduction to key LangGraph concepts: State, Nodes, Edges, Memory, and Interrupts. It consists of five core labs and one cumulative tutorial demonstrating how to build a production-style email support workflow.
 
+## Quickstart
+
+uv sync
+source .venv/bin/activate
+pip3 install langgraph
+
 ## 🚀 Setup 
 
 ### Prerequisites
