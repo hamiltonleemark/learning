@@ -1,3 +1,5 @@
+""" Code provided for learning lang graph. """
+
 # env_utils.py
 import os
 from dotenv import dotenv_values
@@ -24,6 +26,3 @@ def doublecheck_env(file_path: str):
             print(f"{key}={summarize_value(current)}")
         else:
             print(f"{key}=<not set>")
-
-
-
