@@ -2,42 +2,44 @@
 
 Edges control flow not data.
 """
-import pytest
-##
-# we're not running in a Jupyter environment and need to see graphs.
-#from IPython.display import Image, display
 import operator
-from typing import Annotated, List, Literal, TypedDict
+from typing import Annotated, List, TypedDict
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, interrupt
 
 
 class State(TypedDict):
+    """ state definition """
     counter: int
     nlist: Annotated[List[str], operator.add]
 
 
 def node_a(state: State) -> State:
+    """ node a """
     print(f"node a received {state['nlist']}")
     return State(nlist=["A"])
 
 def node_b(state: State) -> State:
+    """ node b """
     print(f"node b received {state['nlist']}")
     return State(nlist=["B"])
 
 def node_c(state: State) -> State:
+    """ node c """
     print(f"node c received {state['nlist']}")
     return State(nlist=["C"])
 
 def node_bb(state: State) -> State:
+    """ node bb """
     print(f"node bb received {state['nlist']}")
     return State(nlist=["BB"])
 
 def node_cc(state: State) -> State:
+    """ node cc """
     print(f"node cc received {state['nlist']}")
     return State(nlist=["CC"])
 
 def node_d(state: State) -> State:
+    """ node d """
     print(f"node d received {state['nlist']}")
     return State(nlist=["D"])
 

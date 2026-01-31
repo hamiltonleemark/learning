@@ -1,13 +1,10 @@
-import pytest
-##
-# we're not running in a Jupyter environment and need to see graphs.
-#from IPython.display import Image, display
-import operator
-from typing import Annotated, List, Literal, TypedDict
+""" test simple nodes in a state graph. """
+
+from typing import List, TypedDict
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, interrupt
 
 class State(TypedDict):
+    """ state object for the graph. """
     counter: int
     nlist: List[str]
 
@@ -20,7 +17,7 @@ def node_a(state: State) -> State:
     # This works. Curious to see if I can return the input state with modifications.
     #return State(nlist = [note]), counter=state['counter'])
     #
-    # Yes, I can. Not sure why would would construct a new object 
+    # Yes, I can. Not sure why would would construct a new object
     # documentation states that langgraph merges state.
     #return state
     return {"nlist": [note], "counter": state["counter"] + 1}

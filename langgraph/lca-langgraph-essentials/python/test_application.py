@@ -1,13 +1,16 @@
+""" learn how to write a real AI application. """
+#  pylint: disable=line-too-long
+#  pylint: disable=broad-exception-caught
+
+
 import logging
 import uuid
+from typing import List, Literal, TypedDict
 from dotenv import load_dotenv
-import os
-import operator
-from IPython.display import Image, display
-from typing import Annotated, List, Literal, TypedDict
 from langchain_openai import ChatOpenAI
 from langgraph.types import Command, interrupt
 from langgraph.graph import END, START, StateGraph
+from langgraph.checkpoint.memory import InMemorySaver
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +28,7 @@ SEARCH_RESULTS3 = "We here are M-H T-Shirt Company create customer t-shirts in v
 
 
 class EmailClassification(TypedDict):
+    """ Classification of customer email. """
     intent: Literal["question", "bug", "billing", "feature", "complex"]
     urgency: Literal["low", "medium", "high", "critical"]
     topic: str
@@ -32,6 +36,7 @@ class EmailClassification(TypedDict):
 
 
 class EmailAgentState(TypedDict):
+    """ State for the email agent. """
     email_content: str
     sender_email: str
     email_id: str
@@ -44,12 +49,14 @@ class EmailAgentState(TypedDict):
 
 # Define nodes and edges.
 def read_email(state: EmailAgentState) -> EmailAgentState:
+    """Read incoming email and extract content. """
+
     logger.debug("Reading email from: %s", state['sender_email'])
-    pass
 
 def classify_intent(state: EmailAgentState) -> EmailAgentState:
     """Use LLM to classify email intent and urgency, then route accordingly"""
-    logger.debug(f"classifying email content {state}")
+
+    logger.debug("classifying email content %s", state)
 
     # Create structured LLM that returns EmailClassification dict
     structured_llm = llm.with_structured_output(EmailClassification)
@@ -72,22 +79,23 @@ def classify_intent(state: EmailAgentState) -> EmailAgentState:
 
 def search_documentation(state: EmailAgentState) -> EmailAgentState:
     """Search knowledge base for relevant information"""
-    logger.debug(f"search_documentation {state}")
+    logger.debug("search_documentation %s", state)
 
     # Build search query from classification
     classification = state.get('classification', {})
     query = f"{classification.get('intent', '')} {classification.get('topic', '')}"
+    logger.debug("search_documentation %s", query)
 
     try:
         # Implement search logic here
         search_results = [
-            "--Search_result_1--",
-            "--Search_result_2--",
-            "--Search_result_3--"
+            SEARCH_RESULTS1,
+            SEARCH_RESULTS2,
+            SEARCH_RESULTS3,
         ]
-    except SearchAPIError as e:
+    except Exception as earg:
         # For recoverable search errors, store error and continue
-        search_results = [f"Search temporarily unavailable: {str[e]}"]
+        search_results = [f"Search temporarily unavailable: {earg}"]
 
     return {"search_results": search_results} # Raw search results or error
 
@@ -96,6 +104,7 @@ def bug_tracking(state: EmailAgentState) -> EmailAgentState:
 
     # Create ticket in your bug tracking system
     ticket_id = f"BUG_{uuid.uuid4()}"
+    logging.debug("Created bug ticket %s for email %s", ticket_id, state['email_id'])
 
     return {"ticket_id": ticket_id}
 
@@ -174,9 +183,8 @@ def human_review(state: EmailAgentState) -> Command[Literal["send_reply", END]]:
             update = {"draft_response": human_decision.get("edited_response", state['draft_response'])},
             goto = "send_reply"
         )
-    else:
-        # Rejection means human will handle directly
-        return Command(update = {}, goto = END)
+    # Rejection means human will handle directly
+    return Command(update = {}, goto = END)
 
 def send_reply(state: EmailAgentState) -> EmailAgentState:
     """Send the email response"""
@@ -206,9 +214,8 @@ def test_email_agent():
     builder.add_edge("search_documentation", "write_response")
     builder.add_edge("bug_tracking", "write_response")
     builder.add_edge("send_reply", END)
-    
+
     # Compile with checkpointer for persistence
-    from langgraph.checkpoint.memory import InMemorySaver
     memory = InMemorySaver()
     app = builder.compile(checkpointer = memory)
 
@@ -234,6 +241,7 @@ def test_email_agent():
         }
     )
     final_result = app.invoke(human_response, config)
+    logging.info("Final state: %s", final_result)
     logger.info("Email sent successfully")
 
 
@@ -259,9 +267,8 @@ def test_email_bulk():
     builder.add_edge("search_documentation", "write_response")
     builder.add_edge("bug_tracking", "write_response")
     builder.add_edge("send_reply", END)
-    
+
     # Compile with checkpointer for persistence
-    from langgraph.checkpoint.memory import InMemorySaver
     memory = InMemorySaver()
     app = builder.compile(checkpointer = memory)
 
@@ -273,11 +280,11 @@ def test_email_bulk():
     ##
 
     email_content = [
-        "I was charged twice for my subscription! This is urgent!",
-        "I was wondering if this was available in blue?",
-        "Can you tell me ho long the sale is on?",
-        "The tire won't stay on my car!",
         "My subscription is going to end in a few months, what is the new rate?",
+        "The tire won't stay on my car!",
+        "Can you tell me how long the sale is on?",
+        "I was wondering if your t-shirts are available in blue?",
+        "I was charged twice for my subscription! This is urgent!",
     ]
 
     needs_approval = []
@@ -285,16 +292,21 @@ def test_email_bulk():
 
     for item, content in enumerate(email_content):
         initial_state = {
-            "email_content" : conten
+            "email_content" : content,
             "sender_email": "mark_lee_hamilton@att.net",
             "email_id": f"email_{item}",
         }
-        print(f"{initial_state[iemail_id']}: ", end="")
+        print(f"{initial_state['email_id']}: ", end="")
 
         thread_id = uuid.uuid4()
         config = {"configurable": {"thread_id": str(thread_id)}}
         result = app.invoke(initial_state, config=config)
+        print("MARK")
+        print(result)
+        print("MARK")
 
         if "__interrupt__" in result.keys():
             result['thread_id'] = thread_id
             needs_approval.append(result)
+
+        return 

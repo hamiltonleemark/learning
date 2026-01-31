@@ -2,38 +2,51 @@
 
 Edges control flow not data.
 """
-import pytest
-#from IPython.display import Image, display
+import logging
 import operator
 from typing import Annotated, List, Literal, TypedDict
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, interrupt
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import interrupt
 
 
 class State(TypedDict):
+    """ state for the graph. """
     counter: int
     nlist: Annotated[List[str], operator.add]
 
 
 def node_a(state: State) -> State:
-    return 
+    """ node a adds its name to the list and returns the state. """
+    logging.info("node_a received state: %s", state)
+    return state
 
 def node_b(state: State) -> State:
+    """ node b adds its name to the list and returns the state. """
+    logging.info("node_b received state: %s", state)
     return State(nlist=["B"])
 
 def node_c(state: State) -> State:
+    """ node c adds its name to the list and returns the state. """
+    logging.info("node_c received state: %s", state)
+
     return State(nlist=["C"])
 
 
 def conditional_edge(state: State) -> Literal["b", "c", END]:
+    """ conditional edge based on user input. """
+
     select = state["nlist"][-1]
+
     if select == "b":
         return "b"
-    elif select == "c":
+
+    if select == "c":
         return "c"
-    elif select == "q":
+
+    if select == "q":
         return END
+    raise interrupt(f"invalid selection: {select}")
 
 def test_memory():
     """ test edge functionality.

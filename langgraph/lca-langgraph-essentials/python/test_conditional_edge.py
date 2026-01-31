@@ -2,14 +2,11 @@
 
 Edges control flow not data.
 """
-import pytest
-##
-# we're not running in a Jupyter environment and need to see graphs.
-#from IPython.display import Image, display
+import logging
 import operator
 from typing import Annotated, List, Literal, TypedDict
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, interrupt
+from langgraph.types import interrupt
 
 
 class State(TypedDict):
@@ -20,14 +17,18 @@ class State(TypedDict):
 
 def node_a(state: State) -> State:
     """ Node a. """
-    return
+    logging.info("node_a state before: %s", state)
+    return state
 
 def node_b(state: State) -> State:
     """ Node b. """
+    logging.info("node_b state before: %s", state)
+
     return State(nlist=["B"])
 
 def node_c(state: State) -> State:
     """ Node c. """
+    logging.info("node_c state before: %s", state)
     return State(nlist=["C"])
 
 
@@ -36,10 +37,13 @@ def conditional_edge(state: State) -> Literal["b", "c", END]:
     select = state["nlist"][-1]
     if select == "b":
         return "b"
-    elif select == "c":
+
+    if select == "c":
         return "c"
-    elif select == "q":
+
+    if select == "q":
         return END
+    raise interrupt(f"invalid selection: {select}")
 
 def test_edge_merge():
     """ test edge functionality.

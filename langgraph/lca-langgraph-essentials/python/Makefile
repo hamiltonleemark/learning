@@ -1,6 +1,6 @@
 .PHONY: pytest pylint check
 pylint:
-	pylint *.py
+	pylint --min-similarity-lines=100 *.py
 
 pytest:
 	pytest -s -v 
