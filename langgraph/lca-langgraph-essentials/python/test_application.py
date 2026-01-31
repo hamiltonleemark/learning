@@ -1,3 +1,4 @@
+import logging
 import uuid
 from dotenv import load_dotenv
 import os
@@ -9,8 +10,18 @@ from langgraph.types import Command, interrupt
 from langgraph.graph import END, START, StateGraph
 
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
 load_dotenv()
 llm = ChatOpenAI(model="gpt-5-mini")
+
+
+
+SEARCH_RESULTS1 = "Our product comes in several amazing colors including red, purple and pink."
+SEARCH_RESULTS2 = "Our current subscription of $15/month will decrease next month to $12/month if you sign up for a year membership."
+SEARCH_RESULTS3 = "We here are M-H T-Shirt Company create customer t-shirts in various styles and colors."
 
 
 class EmailClassification(TypedDict):
@@ -33,10 +44,12 @@ class EmailAgentState(TypedDict):
 
 # Define nodes and edges.
 def read_email(state: EmailAgentState) -> EmailAgentState:
+    logger.debug("Reading email from: %s", state['sender_email'])
     pass
 
 def classify_intent(state: EmailAgentState) -> EmailAgentState:
     """Use LLM to classify email intent and urgency, then route accordingly"""
+    logger.debug(f"classifying email content {state}")
 
     # Create structured LLM that returns EmailClassification dict
     structured_llm = llm.with_structured_output(EmailClassification)
@@ -56,8 +69,10 @@ def classify_intent(state: EmailAgentState) -> EmailAgentState:
     # Store classification as a single dict in state
     return {"classification": classification}
 
+
 def search_documentation(state: EmailAgentState) -> EmailAgentState:
     """Search knowledge base for relevant information"""
+    logger.debug(f"search_documentation {state}")
 
     # Build search query from classification
     classification = state.get('classification', {})
@@ -196,6 +211,90 @@ def test_email_agent():
     from langgraph.checkpoint.memory import InMemorySaver
     memory = InMemorySaver()
     app = builder.compile(checkpointer = memory)
-    image = Image(app.get_graph().draw_mermaid_png())
-    with open("email_agent_graph.png", "wb") as w_hndl:
-        w_hndl.write(image.data)
+
+    ##
+    # Run this to see the graph.
+    # image = Image(app.get_graph().draw_mermaid_png())
+    # with open("email_agent_graph.png", "wb") as w_hndl:
+    #    w_hndl.write(image.data)
+    ##
+
+    initial_state = {
+        "email_content" : "Hello, I was charged twice for my subscription! This is urgent!",
+        "sender_email": "mark_lee_hamilton@att.net",
+        "email_id": "email_001",
+    }
+
+    config = {"configurable": {"thread_id": "customer_001"}}
+    result = app.invoke(initial_state, config=config)
+    logger.info("Draft ready for review: %s\n", result['draft_response'])
+    human_response = Command(
+        resume = {
+            "approved": True,
+        }
+    )
+    final_result = app.invoke(human_response, config)
+    logger.info("Email sent successfully")
+
+
+def test_email_bulk():
+    """Test bulk email response. """
+
+    builder = StateGraph(EmailAgentState)
+
+    # Add nodes
+    builder.add_node("read_email", read_email)
+    builder.add_node("classify_intent", classify_intent)
+    builder.add_node("search_documentation", search_documentation)
+    builder.add_node("bug_tracking", bug_tracking)
+    builder.add_node("write_response", write_response)
+    builder.add_node("human_review", human_review)
+    builder.add_node("send_reply", send_reply)
+
+    # Add edges
+    builder.add_edge(START, "read_email")
+    builder.add_edge("read_email", "classify_intent")
+    builder.add_edge("classify_intent", "search_documentation")
+    builder.add_edge("classify_intent", "bug_tracking")
+    builder.add_edge("search_documentation", "write_response")
+    builder.add_edge("bug_tracking", "write_response")
+    builder.add_edge("send_reply", END)
+    
+    # Compile with checkpointer for persistence
+    from langgraph.checkpoint.memory import InMemorySaver
+    memory = InMemorySaver()
+    app = builder.compile(checkpointer = memory)
+
+    ##
+    # Run this to see the graph.
+    # image = Image(app.get_graph().draw_mermaid_png())
+    # with open("email_agent_graph.png", "wb") as w_hndl:
+    #    w_hndl.write(image.data)
+    ##
+
+    email_content = [
+        "I was charged twice for my subscription! This is urgent!",
+        "I was wondering if this was available in blue?",
+        "Can you tell me ho long the sale is on?",
+        "The tire won't stay on my car!",
+        "My subscription is going to end in a few months, what is the new rate?",
+    ]
+
+    needs_approval = []
+
+
+    for item, content in enumerate(email_content):
+        initial_state = {
+            "email_content" : conten
+            "sender_email": "mark_lee_hamilton@att.net",
+            "email_id": f"email_{item}",
+        }
+        print(f"{initial_state[iemail_id']}: ", end="")
+
+        thread_id = uuid.uuid4()
+        config = {"configurable": {"thread_id": str(thread_id)}}
+        result = app.invoke(initial_state, config=config)
+
+        if "__interrupt__" in result.keys():
+            result['thread_id'] = thread_id
+            needs_approval.append(result)
