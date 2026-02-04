@@ -301,12 +301,10 @@ def test_email_bulk():
         thread_id = uuid.uuid4()
         config = {"configurable": {"thread_id": str(thread_id)}}
         result = app.invoke(initial_state, config=config)
-        print("MARK")
         print(result)
-        print("MARK")
 
         if "__interrupt__" in result.keys():
             result['thread_id'] = thread_id
             needs_approval.append(result)
 
-        return 
+        return
