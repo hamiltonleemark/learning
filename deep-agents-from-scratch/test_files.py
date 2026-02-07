@@ -6,6 +6,7 @@ This module provides tools for managing a virtual filesystem stored in agent sta
 enabling context offloading and information persistence across agent interactions.
 """
 import os
+import logging
 import pytest 
 from dotenv import load_dotenv
 from notebooks.utils import show_prompt, format_messages
@@ -35,6 +36,8 @@ from src.deep_agents_from_scratch.prompts import (
 @tool(description=LS_DESCRIPTION)
 def ls(state: Annotated[DeepAgentState, InjectedState]) -> list[str]:
     """List all files in the virtual filesystem."""
+    logging.info("Listing files in virtual filesystem")
+
     return list(state.get("files", {}).keys())
 
 
@@ -52,6 +55,7 @@ def read_file(file_path: str, state: Annotated[DeepAgentState, InjectedState],
     Returns:
         Formatted file content with line numbers, or error message if file not found
     """
+    logging.info(f"Reading file '{file_path}' from virtual filesystem with offset {offset} and limit {limit}")
     files = state.get("files", {})
     if file_path not in files:
         return f"Error: File '{file_path}' not found"
@@ -90,6 +94,7 @@ def write_file(file_path: str, content: str,
     Returns:
         Command to update agent state with new file content
     """
+    logging.info(f"Writing to file '{file_path}' in virtual filesystem with content length {len(content)}")
     files = state.get("files", {})
     files[file_path] = content
     return Command(
@@ -106,7 +111,6 @@ def write_file(file_path: str, content: str,
 
 # File usage instructions
 FILE_USAGE_INSTRUCTIONS = """You have access to a virtual file system to help you retain and save context.                                  
-                                                                                                                
 ## Workflow Process                                                                                            
 1. **Orient**: Use ls() to see existing files before starting work                                             
 2. **Save**: Use write_file() to store the user's request so that we can keep it for later                     
@@ -155,9 +159,8 @@ def web_search(query: str,):
     Example:
         web_search("machine learning applications in healthcare")
     """
+    logging.info(f"Performing web search for query: {query}")
     return search_result
-
-
 
 
 def test_reducer_syntax():
@@ -171,15 +174,27 @@ def test_reducer_syntax():
 
 
 def test_file():
-    show_prompt(LS_DESCRIPTION)
-    show_prompt(READ_FILE_DESCRIPTION)
-    show_prompt(WRITE_FILE_DESCRIPTION)
+    #  show_prompt(LS_DESCRIPTION)
+    #  show_prompt(READ_FILE_DESCRIPTION)
+    # show_prompt(WRITE_FILE_DESCRIPTION)
 
     # Create agent using create_react_agent directly
-    #model = init_chat_model(model="anthropic:claude-sonnet-4-20250514", temperature=0.0)
-    model = init_chat_model(model="gpt-4.1-mini", temperature=0.0)
+    #model = init_chat_model(model="gpt-4.1-mini", temperature=0.0)
+    model = init_chat_model(model="gpt-5", temperature=0.0)
     tools = [ls, read_file, write_file, web_search]
 
     # Create agent with system prompt
     agent = create_agent(model, tools, system_prompt=INSTRUCTIONS,
                          state_schema=DeepAgentState)
+    result = agent.invoke(
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "Give me an overview of Model Context Protocol (MCP).",
+                }
+            ],
+            "files": {},
+        }
+    )
+    format_messages(result["messages"])
