@@ -8,9 +8,10 @@ enabling context offloading and information persistence across agent interaction
 import os
 import pytest 
 from dotenv import load_dotenv
-from notebooks.utils import show_prompt
+from notebooks.utils import show_prompt, format_messages
 import src.deep_agents_from_scratch.prompts
-from src.deep_agents_from_scratch.state import DeepAgentState
+from src.deep_agents_from_scratch.file_tools import ls, read_file, write_file
+from src.deep_agents_from_scratch.state import DeepAgentState, Todo, file_reducer
 from typing import Annotated, NotRequired
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import InjectedToolCallId, tool
@@ -30,19 +31,6 @@ from src.deep_agents_from_scratch.prompts import (
     READ_FILE_DESCRIPTION,
     WRITE_FILE_DESCRIPTION,
 )
-
-
-class DeepAgentState(AgentState):
-    """Extended agent state that includes task tracking and virtual file system.
-
-    Inherits from LangGraph's AgentState and adds:
-    - todos: List of Todo items for task planning and progress tracking
-    - files: Virtual file system stored as dict mapping filenames to content
-    """
-
-    todos: NotRequired[list[Todo]]
-    files: Annotated[NotRequired[dict[str, str]], file_reducer]
-
 
 @tool(description=LS_DESCRIPTION)
 def ls(state: Annotated[DeepAgentState, InjectedState]) -> list[str]:
@@ -114,26 +102,6 @@ def write_file(file_path: str, content: str,
     )
 
 
-def file_reducer(left, right):
-    """Merge two file dictionaries, with right side taking precedence.
-
-    Used as a reducer function for the files field in agent state,
-    allowing incremental updates to the virtual file system.
-
-    Args:
-        left: Left side dictionary (existing files)
-        right: Right side dictionary (new/updated files)
-
-    Returns:
-        Merged dictionary with right values overriding left values
-    """
-    if left is None:
-        return right
-    elif right is None:
-        return left
-    else:
-        return {**left, **right}
-
 
 
 # File usage instructions
@@ -157,10 +125,7 @@ from langchain.chat_models import init_chat_model
 from langchain_core.tools import tool
 #from langgraph.prebuilt import create_react_agent
 from langchain.agents import create_agent
-from utils import format_messages
 
-from deep_agents_from_scratch.file_tools import ls, read_file, write_file
-from deep_agents_from_scratch.state import DeepAgentState
 
 # Mock search result
 search_result = """The Model Context Protocol (MCP) is an open standard protocol developed
