@@ -1,0 +1,23 @@
+accounts = [
+    {
+        "patient_id": "P1001",
+        "provider": "Northwest Medical",
+        "balance": 425.50,
+        "status": "OPEN",
+        "description": "Cardiology patient payment"
+    },
+    {
+        "patient_id": "P1002",
+        "provider": "Valley Health",
+        "balance": 125.00,
+        "status": "PAID",
+        "description": "Emergency department payment"
+    },
+    {
+        "patient_id": "P1003",
+        "provider": "Northwest Medical",
+        "balance": 875.25,
+        "status": "OPEN",
+        "description": "Cardiology account balance"
+    }
+]
