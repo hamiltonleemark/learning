@@ -236,11 +236,15 @@ def search_type_flow():
     query = {
         "query": {
             "bool": {
-                "filter": [{
+                "must": [
+                    {"match": {"description": "cardiology"}}
+            ],
+            "filter": [{
                     "range": {
                         "balance": {"gt": 400 },
                     }
-                 },{
+                 },
+                           {
                     "term": { "status": "OPEN" }
                  }]
             }
@@ -252,6 +256,63 @@ def search_type_flow():
         print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
 
 
+def index_sort():
+    """ Search patient_accounts index with different search types """
+
+    query = {
+        "query": {
+            "term": {
+                "status": "OPEN"
+            }
+        },
+        "sort": [
+            {
+                    "balance": {"order": "desc"}
+            }
+        ],
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+
+def aggregation_sort():
+    """ Aggregate status."""
+
+    query = {
+        "size": 0,
+        "aggs": {
+            "status_counts": {
+                "terms": {
+                    "field": "status"
+                }
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    print("aggregate status")
+    for result in results["aggregations"]["status_counts"]["buckets"]:
+        print("  ", result)
+
+    query = {
+        "size": 0,
+        "aggs": {
+            "status_counts": {
+                "terms": {
+                    "field": "provider.keyword",
+                }
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    print("aggregate provider.keyword")
+    for result in results["aggregations"]["status_counts"]["buckets"]:
+        print("  ", result)
+
+
 def show_mapping():
     """ Show mapping for patient_accounts index """
 
@@ -260,12 +321,15 @@ def show_mapping():
     print(f"Mapping for {INDEX_NAME} index:")
     pprint(mapping)
 
+
 if __name__ == "__main__":
     assert_es_connection()
     assert_patient_accounts_index()
     update_patient_account()
-    bulk_load_documents()
-    search_type_flow()
+    #bulk_load_documents()
+    aggregation_sort()
+    #search_type_flow()
+    #index_sort()
     #patient_search()
     #patient_keyword()
     #show_mapping()
