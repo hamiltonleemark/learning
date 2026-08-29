@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import json
+from pprint import pprint
 import elasticsearch
 
 es = elasticsearch.Elasticsearch("http://127.0.0.1:9200",
@@ -50,7 +51,7 @@ def assert_patient_accounts_index():
 
     print("loading documents")
     cwd = os.path.dirname(os.path.abspath(__file__))
-    dataset = os.path.join(cwd, "dataset", "patients.json")
+    dataset = os.path.join(cwd, "..", "dataset", "patients.json")
     print("Current working directory:", cwd)
     with open(dataset, "r", encoding="utf-8") as hndl:
         accounts = json.load(hndl)
@@ -110,7 +111,16 @@ def patient_search():
     for result in results["hits"]["hits"]:
         print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
 
+def show_mapping():
+    """ Show mapping of patient_accounts index """
+
+    mapping = es.indices.get_mapping(index="patient_accounts")
+
+    print("Mapping for 'patient_accounts' index:")
+    pprint(mapping)
+
 if __name__ == "__main__":
     assert_es_connection()
     assert_patient_accounts_index()
     patient_search()
+    show_mapping()
