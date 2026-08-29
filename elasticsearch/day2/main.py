@@ -230,6 +230,28 @@ def patient_keyword():
     assert len(results["hits"]["hits"]) == 0, "Expected 0 hit for provider 'northwest medical'"
     ##
 
+def search_type_flow():
+    """ Search patient_accounts index with different search types """
+
+    query = {
+        "query": {
+            "bool": {
+                "filter": [{
+                    "range": {
+                        "balance": {"gt": 400 },
+                    }
+                 },{
+                    "term": { "status": "OPEN" }
+                 }]
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+
 def show_mapping():
     """ Show mapping for patient_accounts index """
 
@@ -243,6 +265,7 @@ if __name__ == "__main__":
     assert_patient_accounts_index()
     update_patient_account()
     bulk_load_documents()
+    search_type_flow()
     #patient_search()
     #patient_keyword()
     #show_mapping()
