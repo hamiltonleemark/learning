@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import json
 import elasticsearch
 
 es = elasticsearch.Elasticsearch("http://127.0.0.1:9200",
@@ -49,14 +50,67 @@ def assert_patient_accounts_index():
 
     print("loading documents")
     cwd = os.path.dirname(os.path.abspath(__file__))
-    dataset = os.path.join(cwd, "patient_accounts.json")
+    dataset = os.path.join(cwd, "dataset", "patients.json")
     print("Current working directory:", cwd)
-    sys.exit(0)
-    with open("data/patient_accounts.json", "r") as hndl:
-        data = f.read()
-        es.bulk(body=data, index="patient_accounts")
+    with open(dataset, "r", encoding="utf-8") as hndl:
+        accounts = json.load(hndl)
+        for account in accounts:
+            print("loading account:", account)
+            es.index(index="patient_accounts", id=account["patient_id"], document=account)
         print("Documents loaded into 'patient_accounts' index.")
+
+def patient_search():
+    """ Search patient_accounts index """
+
+    query = {
+        "query": {
+            "match": {
+                "description": "cardiology"
+            }
+        }
+    }
+
+    results = es.search(index="patient_accounts", body=query)
+
+    print("hits for cardiology:")
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+    ## multiple terms search. Note multiple terms means "OR" search
+    query = {
+        "query": {
+            "match": {
+                "description": "cardiology payment"
+            }
+        }
+    }
+
+    results = es.search(index="patient_accounts", body=query)
+
+    print("hits for cardiology or payment:")
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+
+    ## multiple terms search with AND.
+    query = {
+        "query": {
+            "match": {
+                "description": {
+                    "query": "cardiology payment",
+                    "operator": "and"
+                }
+            }
+        }
+    }
+
+    results = es.search(index="patient_accounts", body=query)
+
+    print("hits for cardiology and payment:")
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
 
 if __name__ == "__main__":
     assert_es_connection()
     assert_patient_accounts_index()
+    patient_search()

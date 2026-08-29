@@ -1,4 +1,4 @@
-accounts = [
+[
     {
         "patient_id": "P1001",
         "provider": "Northwest Medical",
