@@ -43,9 +43,19 @@ def assert_patient_accounts_index():
     # Populate the index with some data
     document = es.count(index="patient_accounts")["count"]
     print("Patient documents count:", document)
-    if document == 0:
-        print("No documents")
+    if document != 0:
+        return
     ##
+
+    print("loading documents")
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    dataset = os.path.join(cwd, "patient_accounts.json")
+    print("Current working directory:", cwd)
+    sys.exit(0)
+    with open("data/patient_accounts.json", "r") as hndl:
+        data = f.read()
+        es.bulk(body=data, index="patient_accounts")
+        print("Documents loaded into 'patient_accounts' index.")
 
 if __name__ == "__main__":
     assert_es_connection()
