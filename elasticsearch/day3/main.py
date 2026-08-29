@@ -187,7 +187,7 @@ def should_search():
                     {"match": {"description": "cardiology"}},
                     {"match": {"description": "payment"}},
             ],
-            "minimum_should_match": 1,
+            "minimum_should_match": 2,
             "filter": [
                 {
                     "term": { "status": "OPEN" }
@@ -201,6 +201,212 @@ def should_search():
     for result in results["hits"]["hits"]:
         print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
 
+
+def must_not_search():
+    """ Search patient_accounts index with different search types """
+
+    query = {
+        "query": {
+            "bool": {
+                "must_not": [
+                    {"term": {"provider.keyword": "Valley Health"}},
+            ],
+            "filter": [
+                {
+                    "term": { "status": "OPEN" }
+                },{
+                    "range": { "balance": {"gt": 400 }}
+                },
+            ]
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+
+def multi_match_search():
+    """ Search multi match. """
+
+    query = {
+        "query": {
+            "multi_match": {
+                "query": "Northwest cardiology",
+                "fields": ["provider^2", "description"]
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+    query = {
+        "query": {
+            "multi_match": {
+                "query": "Valley cardiology",
+                "fields": ["provider", "description"]
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+
+def learning_exists():
+    """ Update patient_accounts index """
+
+    es.update(index=INDEX_NAME, id="P0001", doc={"insurance_id": "INS-12345"})
+    doc = es.get(index=INDEX_NAME, id="P0001")
+    assert doc["_source"]["insurance_id"]
+
+    query = {
+        "query": {
+            "exists": {
+                "field": "insurance_id"
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    print("learnig exists search results:")
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+
+def pagination_search():
+    """ Update patient_accounts index """
+
+    es.update(index=INDEX_NAME, id="P0001", doc={"insurance_id": "INS-12345"})
+    doc = es.get(index=INDEX_NAME, id="P0001")
+    assert doc["_source"]["insurance_id"]
+
+    query = {
+        "query": {
+            "match_all": {}
+        },
+        "sort": [
+            {"balance": "desc"}
+        ],
+        "from": 0,
+        "size": 2
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+    print("learnig exists search results:")
+    for result in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % result)
+
+def deep_search():
+    """ Update patient_accounts index """
+
+    # First page
+    query = {
+        "query": {
+            "match_all": {}
+        },
+        "sort": [
+            {"balance": "desc"},
+            {"patient_id": "asc"}
+        ],
+        "size": 2
+    }
+
+    results = es.search(
+        index=INDEX_NAME,
+        body=query
+    )
+
+    print("Page 1")
+    for hit in results["hits"]["hits"]:
+        print(hit["_id"], hit["_source"]["balance"], hit["sort"])
+    
+    # Get the sort values from the last hit on page 1
+    last_sort = results["hits"]["hits"][-1]["sort"]
+    print("Moving to next page with search_after:", last_sort)
+    
+    # Second page
+    query = {
+        "query": {
+            "match_all": {}
+        },
+        "sort": [
+            {"balance": "desc"},
+            {"patient_id": "asc"}
+        ],
+        "search_after": last_sort,
+        "size": 2
+    }
+    
+    results = es.search(index=INDEX_NAME, body=query)
+    
+    print("Page 2")
+    for hit in results["hits"]["hits"]:
+        print(
+            hit["_id"],
+            hit["_source"]["balance"],
+            hit["sort"]
+        )
+
+
+def fuzzy_search():
+    """ Update patient_accounts index """
+
+    # First page
+    query = {
+        "query": {
+            "match": {
+                "description": {
+                    "query": "cardilogy",
+                    "fuzziness": "AUTO"
+                }
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+
+    for hit in results["hits"]["hits"]:
+        print(hit["_id"], hit["_source"])
+
+
+def boosting_search():
+    """ Update patient_accounts index """
+
+    query = {
+        "query": {
+            "multi_match": {
+                "query": "Northwest cardiology",
+                "fields": ["provider^2", "description"]
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+
+    print("Boosting search results:")
+    for hit in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % hit)
+
+    query = {
+        "query": {
+            "multi_match": {
+                "query": "Northwest cardiology",
+                "fields": ["provider^3", "description"]
+            }
+        }
+    }
+
+    results = es.search(index=INDEX_NAME, body=query)
+
+    print("Boosting search results:")
+    for hit in results["hits"]["hits"]:
+        print("  hit id=%(_id)s score=%(_score)s source=%(_source)s" % hit)
+    
 
 def show_mapping():
     """ Show mapping for patient_accounts index """
@@ -216,4 +422,11 @@ if __name__ == "__main__":
     assert_patient_accounts_index()
     update_patient_account()
     bulk_load_documents()
-    should_search()
+    #should_search()
+    #must_not_search()
+    #multi_match_search()
+    #learning_exists()
+    #pagination_search()
+    #deep_search()
+    #fuzzy_search()
+    boosting_search()
